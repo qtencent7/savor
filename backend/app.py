@@ -157,18 +157,23 @@ def analyze_search_results(query: str, results: List[Dict[str, Any]]) -> Dict[st
                     # 找到对应的分析结果
                     for analysis_item in result_analysis:
                         if analysis_item.get("index") == i:
-                            # 复制原始结果并添加相关性信息
-                            result_with_relevance = result.copy()
-                            result_with_relevance["relevance_score"] = analysis_item.get("relevance_score", 0)
-                            result_with_relevance["relevance_reason"] = analysis_item.get("relevance_reason", "")
-                            relevant_results.append(result_with_relevance)
+                            # 获取相关性得分
+                            relevance_score = analysis_item.get("relevance_score", 0)
+                            
+                            # 只添加得分高于7分的结果
+                            if relevance_score > 7:
+                                # 复制原始结果并添加相关性信息
+                                result_with_relevance = result.copy()
+                                result_with_relevance["relevance_score"] = relevance_score
+                                result_with_relevance["relevance_reason"] = analysis_item.get("relevance_reason", "")
+                                relevant_results.append(result_with_relevance)
                             break
                     else:
-                        # 如果没有找到对应的分析，添加原始结果
-                        relevant_results.append(result)
+                        # 如果没有找到对应的分析，不添加该结果
+                        pass
                 else:
-                    # 如果分析结果不足，添加原始结果
-                    relevant_results.append(result)
+                    # 如果分析结果不足，不添加该结果
+                    pass
             
             # 如果没有相关结果，返回空列表
             if not has_relevant:
