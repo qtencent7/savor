@@ -202,7 +202,7 @@ def analyze_search_results(query: str, results: List[Dict[str, Any]], session_id
         # Create the prompt for analysis
         system_prompt = """You are an AI assistant that analyzes search results for relevance to a user's query.
 For each search result, determine:
-1. How relevant it is to the query (score 0-100)
+1. How relevant it is to the query (score 0-10)
 2. Why it is or isn't relevant
 3. Whether the overall set of results contains relevant information
 
@@ -217,7 +217,7 @@ Search Results:
 {results_text}
 
 Please analyze these results and provide:
-1. For each result: relevance score (0-100) and reason
+1. For each result: relevance score (0-10) and reason
 2. Whether any results are relevant to the query (true/false)
 3. If no relevant results, suggestions for improving the search
 
@@ -226,7 +226,7 @@ Format your response as JSON:
   "result_analysis": [
     {{
       "result_index": 0,
-      "relevance_score": 85,
+      "relevance_score": 8.5,
       "relevance_reason": "Directly addresses the query with recent information"
     }},
     ...
