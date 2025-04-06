@@ -1,41 +1,41 @@
-# 新闻搜索 Agent
+# News Search Agent
 
-这是一个使用DuckDuckGo或Google搜索新闻的智能应用，前端采用React，后端采用Python。应用流程如下：
+This is an intelligent application that uses DuckDuckGo or Google to search for news, with a React frontend and Python backend. The application flow is as follows:
 
-1. 用户输入搜索主题
-2. AI生成优化的搜索查询
-3. 系统使用DuckDuckGo或Google搜索相关新闻
-4. AI分析搜索结果，返回最相关的内容
-5. 如果没有找到相关结果，系统会提示用户缩小搜索范围并给出建议
+1. User inputs a search topic
+2. AI generates optimized search queries
+3. The system uses DuckDuckGo or Google to search for relevant news
+4. AI analyzes search results and returns the most relevant content
+5. If no relevant results are found, the system prompts the user to narrow down the search and provides suggestions
 
-## 多轮对话截图
-![多轮对话截图](./imgs/1.png)
+## Multi-turn Conversation Screenshot
+![Multi-turn Conversation Screenshot](./imgs/1.png)
 
 
-## 项目结构
+## Project Structure
 
 ```
 savor/
-├── backend/             # Python后端
-│   ├── app.py           # Flask应用主文件
-│   ├── requirements.txt # 依赖项
-│   └── .env.example     # 环境变量示例文件
-└── frontend/            # React前端
-    ├── src/             # 源代码
-    ├── public/          # 静态资源
-    └── package.json     # 依赖配置
+├── backend/             # Python backend
+│   ├── app.py           # Flask application main file
+│   ├── requirements.txt # Dependencies
+│   └── .env.example     # Environment variables example file
+└── frontend/            # React frontend
+    ├── src/             # Source code
+    ├── public/          # Static resources
+    └── package.json     # Dependency configuration
 ```
 
-## 安装与运行
+## Installation and Running
 
-### 后端设置
+### Backend Setup
 
-1. 进入后端目录：
+1. Navigate to the backend directory:
    ```
    cd backend
    ```
 
-2. 创建并激活虚拟环境（可选但推荐）：
+2. Create and activate a virtual environment (optional but recommended):
    ```
    python -m venv venv
    # Windows
@@ -44,60 +44,68 @@ savor/
    source venv/bin/activate
    ```
 
-3. 安装依赖：
+3. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
 
-4. 创建环境变量文件：
+4. Create environment variables file:
    ```
-   # 复制示例文件
+   # Copy example file
    copy .env.example .env
-   # 编辑.env文件，添加你的OpenAI API密钥、DeepSeek API密钥、SERPAPI API密钥和搜索引擎选择
+   # Edit the .env file, add your OpenAI API key, DeepSeek API key, SERPAPI API key, and search engine selection
    ```
 
-5. 运行后端服务：
+5. Run the backend service:
    ```
    python app.py
    ```
 
-### 前端设置
+### Frontend Setup
 
-1. 进入前端目录：
+1. Navigate to the frontend directory:
    ```
    cd frontend
    ```
 
-2. 安装依赖：
+2. Install dependencies:
    ```
    yarn
    ```
 
-3. 启动开发服务器：
+3. Start the development server:
    ```
    yarn dev
    ```
 
-4. 在浏览器中访问应用：
+4. Access the application in your browser:
    ```
    http://localhost:5173
    ```
 
-## 使用说明
+## Usage Instructions
 
-1. 在搜索框中输入你想了解的新闻主题
-2. 点击"搜索"按钮或按Enter键
-3. 等待AI处理并返回结果
-4. 查看搜索结果列表
-5. 如果没有找到相关结果，系统会提供改进搜索的建议
+1. Enter the news topic you want to learn about in the search box
+2. Click the "Search" button or press Enter
+3. Wait for the AI to process and return results
+4. View the search results list
+5. If no relevant results are found, the system will provide suggestions to improve your search
 
-## 技术栈
+## Technology Stack
 
-- 前端：React、TypeScript、Vite、Ant Design
-- 后端：Python、Flask、DuckDuckGo Search API、OpenAI API
+- Frontend: React, TypeScript, Vite, Ant Design
+- Backend: Python, Flask, DuckDuckGo Search API, OpenAI API
 
-## 注意事项
+## Notes
 
-- 使用前需要设置有效的OpenAI API密钥、DeepSeek API密钥、SERPAPI API密钥和搜索引擎选择
-- 确保网络连接正常，以便访问DuckDuckGo、Google、DeepSeek和OpenAI服务
-- 搜索结果质量取决于搜索查询的具体内容和DuckDuckGo、Google的搜索结果
+- Valid OpenAI API key, DeepSeek API key, SERPAPI API key, and search engine selection are required before use
+- Ensure network connectivity to access DuckDuckGo, Google, DeepSeek, and OpenAI services
+- Search result quality depends on the specific content of search queries and DuckDuckGo/Google search results
+
+## TODO
+
+- Implement backend chat history saving functionality
+  - Design chat history data model
+  - Implement API for saving chat records
+  - Implement API for querying historical chat records
+  - Add user authentication to associate chat history

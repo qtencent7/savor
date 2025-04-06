@@ -1,3 +1,3 @@
-// 导出所有API请求函数，方便统一导入
+// Export all API request functions, It is convenient for unified import.
 export * from './api';
 export * from './config';

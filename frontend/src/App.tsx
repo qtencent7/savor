@@ -10,7 +10,7 @@ function App() {
     <Layout className="app-container">
       <Chat />
       <Footer className="app-footer">
-        <Text type="secondary">DuckDuckGo 新闻搜索 {new Date().getFullYear()} 由 AI 驱动</Text>
+        <Text type="secondary">DuckDuckGo News Search {new Date().getFullYear()} Powered by AI</Text>
       </Footer>
     </Layout>
   )

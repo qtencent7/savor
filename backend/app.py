@@ -14,51 +14,51 @@ from serpapi import GoogleSearch
 
 print(f"DuckDuckGo Search version: {duckduckgo_search.__version__}")
 
-# 加载环境变量
+# Load environment variables
 load_dotenv()
 
-# 初始化 FastAPI 应用
-app = FastAPI(title="新闻搜索 API", description="使用DuckDuckGo或Google搜索新闻的API")
+# Initialize FastAPI application
+app = FastAPI(title="News Search API", description="API for searching news using DuckDuckGo or Google")
 
-# 配置CORS
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源，生产环境中应该限制为特定域名
+    allow_origins=["*"],  # Allow all origins, in production environment should be restricted to specific domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 配置 OpenAI API
+# Configure OpenAI API
 openai_api_key = os.getenv("OPENAI_API_KEY", "")
 deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
 serpapi_api_key = os.getenv("SERPAPI_API_KEY", "")
 
-# 搜索引擎选择 ("duckduckgo" 或 "google")
+# Search engine selection ("duckduckgo" or "google")
 SEARCH_ENGINE = os.getenv("SEARCH_ENGINE", "duckduckgo")
 
-# 设置API密钥
+# Set API key
 if deepseek_api_key:
     openai.base_url = "https://api.deepseek.com"
     openai.api_key = deepseek_api_key
-    print(f"使用 DeepSeek API 密钥")
+    print(f"Using DeepSeek API key")
 else:
     openai.api_key = openai_api_key
-    print(f"使用 OpenAI API 密钥")
+    print(f"Using OpenAI API key")
 
-print(f"当前搜索引擎: {SEARCH_ENGINE}")
+print(f"Current search engine: {SEARCH_ENGINE}")
 
-# 对话历史存储
-# 使用字典存储对话历史，键为会话ID，值为消息列表
+# Conversation history storage
+# Use dictionary to store conversation history, key is session ID, value is message list
 conversation_history = {}
 
-# 模型定义
+# Model definitions
 class SearchQuery(BaseModel):
     query: str
-    session_id: Optional[str] = None  # 新增会话ID字段
+    session_id: Optional[str] = None  # Added session ID field
 
 class Message(BaseModel):
-    role: str  # 'user' 或 'assistant'
+    role: str  # 'user' or 'assistant'
     content: str
     timestamp: datetime
 
@@ -82,7 +82,7 @@ class SearchResponse(BaseModel):
     results: List[NewsResult]
     has_relevant_results: bool
     suggestions: Optional[str] = None
-    conversation: Optional[Conversation] = None  # 新增对话历史
+    conversation: Optional[Conversation] = None  # Added conversation history
 
 class ApiResponse(BaseModel):
     data: Any
@@ -90,23 +90,23 @@ class ApiResponse(BaseModel):
     error_code: int = 0
     error_message: str = ""
 
-# 辅助函数
+# Helper functions
 def generate_search_query(user_input: str, session_id: Optional[str] = None) -> str:
-    """使用 DeepSeek 生成搜索查询，考虑对话历史"""
+    """Use DeepSeek to generate search queries, considering conversation history"""
     try:
         messages = [
-            {"role": "system", "content": "你是一个帮助用户生成精确搜索查询的助手。根据用户的输入和对话历史，生成一个简洁、精确的搜索查询，以便在搜索引擎上获得最相关的新闻结果。"}
+            {"role": "system", "content": "You are an assistant that helps users generate precise search queries. Based on the user's input and conversation history, generate a concise, precise search query to get the most relevant news results on search engines."}
         ]
         
-        # 如果有会话ID，添加对话历史
+        # If there's a session ID, add conversation history
         if session_id and session_id in conversation_history:
-            # 只取最近的5条消息作为上下文
+            # Only take the last 5 messages as context
             recent_messages = conversation_history[session_id][-5:]
             for msg in recent_messages:
                 messages.append({"role": msg.role, "content": msg.content})
         
-        # 添加当前用户输入
-        messages.append({"role": "user", "content": f"为以下内容生成一个搜索查询，用于查找相关新闻：{user_input}，里面不要添加时间，除非用户的搜索词里面有时间。"})
+        # Add current user input
+        messages.append({"role": "user", "content": f"Generate a search query for the following content to find relevant news: {user_input}, do not add time unless there is time in the user's search terms."})
         
         response = openai.chat.completions.create(
             model="deepseek-chat",
@@ -115,251 +115,257 @@ def generate_search_query(user_input: str, session_id: Optional[str] = None) -> 
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"生成搜索查询时出错: {e}")
+        print(f"Error generating search query: {e}")
         return user_input
 
 def search_duckduckgo(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
-    """使用 DuckDuckGo 搜索新闻"""
+    """Use DuckDuckGo to search for news"""
     try:
         with DDGS() as ddgs:
             results = list(ddgs.news(query, max_results=max_results))
             return results
     except Exception as e:
-        print(f"搜索 DuckDuckGo 时出错: {e}")
+        print(f"Error searching DuckDuckGo: {e}")
         return []
 
 def search_google(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
-    """使用 Google 搜索新闻"""
+    """Use Google to search for news"""
     try:
         if not serpapi_api_key:
-            print("未设置 SERPAPI_API_KEY，无法使用 Google 搜索")
-            return []
-            
-        search_params = {
-            "engine": "google",
+            print("SerpAPI key not found, falling back to DuckDuckGo")
+            return search_duckduckgo(query, max_results)
+        
+        # Configure Google Search parameters
+        params = {
             "q": query,
-            "tbm": "nws",  # 新闻搜索
+            "tbm": "nws",  # News search
             "num": max_results,
             "api_key": serpapi_api_key
         }
         
-        search = GoogleSearch(search_params)
+        # Execute the search
+        search = GoogleSearch(params)
         results = search.get_dict()
         
-        # 转换为与DuckDuckGo相同的格式
+        # Process Google search results to match DuckDuckGo format
         formatted_results = []
         if "news_results" in results:
-            for item in results["news_results"]:
-                formatted_results.append({
+            for item in results["news_results"][:max_results]:
+                formatted_result = {
                     "title": item.get("title", ""),
                     "url": item.get("link", ""),
                     "body": item.get("snippet", ""),
                     "source": item.get("source", ""),
                     "date": item.get("date", ""),
                     "image": item.get("thumbnail", None)
-                })
+                }
+                formatted_results.append(formatted_result)
         
         return formatted_results
     except Exception as e:
-        print(f"搜索 Google 时出错: {e}")
-        return []
+        print(f"Error searching Google: {e}")
+        return search_duckduckgo(query, max_results)  # Fallback to DuckDuckGo
 
 def search_news(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
-    """根据选择的搜索引擎搜索新闻"""
+    """Search for news based on the selected search engine"""
     if SEARCH_ENGINE.lower() == "google":
         return search_google(query, max_results)
     else:
         return search_duckduckgo(query, max_results)
 
 def analyze_search_results(query: str, results: List[Dict[str, Any]], session_id: Optional[str] = None) -> Dict[str, Any]:
-    """使用 DeepSeek 分析搜索结果的相关性，考虑对话历史"""
-    if not results:
-        return {
-            "relevant_results": [],
-            "has_relevant": False,
-            "suggestions": f"没有找到与'{query}'相关的新闻。请尝试使用更具体的关键词，或者考虑更改搜索主题。"
-        }
-    
+    """Use DeepSeek to analyze the relevance of search results, considering conversation history"""
     try:
-        # 准备搜索结果摘要
+        if not results:
+            return {
+                "has_relevant": False,
+                "relevant_results": [],
+                "suggestions": "Try using different keywords or broaden your search terms."
+            }
+        
+        # Prepare conversation history context
+        conversation_context = ""
+        if session_id and session_id in conversation_history:
+            # Only include the last 5 messages
+            recent_messages = conversation_history[session_id][-5:]
+            conversation_context = "\n".join([f"{msg.role.capitalize()}: {msg.content}" for msg in recent_messages])
+        
+        # Prepare search results for analysis
         results_text = ""
         for i, result in enumerate(results):
-            results_text += f"{i+1}. 标题: {result.get('title', 'N/A')}\n"
-            results_text += f"   来源: {result.get('source', 'N/A')}\n"
-            results_text += f"   摘要: {result.get('body', 'N/A')}\n\n"
+            results_text += f"Result {i+1}:\n"
+            results_text += f"Title: {result.get('title', '')}\n"
+            results_text += f"Source: {result.get('source', '')}\n"
+            results_text += f"Date: {result.get('date', '')}\n"
+            results_text += f"Content: {result.get('body', '')}\n\n"
         
-        # 准备消息列表
-        messages = [
-            {"role": "system", "content": "你是一个帮助分析搜索结果相关性的助手。评估搜索结果与查询的相关性，并提供改进建议。对于每个相关的结果，请提供具体的相关性理由。"}
-        ]
-        
-        # 如果有会话ID，添加对话历史
-        if session_id and session_id in conversation_history:
-            # 只取最近的3条消息作为上下文
-            recent_messages = conversation_history[session_id][-3:]
-            for msg in recent_messages:
-                messages.append({"role": msg.role, "content": msg.content})
-        
-        # 添加当前查询和结果
-        messages.append({"role": "user", "content": f"""查询: {query}
+        # Create the prompt for analysis
+        system_prompt = """You are an AI assistant that analyzes search results for relevance to a user's query.
+For each search result, determine:
+1. How relevant it is to the query (score 0-100)
+2. Why it is or isn't relevant
+3. Whether the overall set of results contains relevant information
 
-搜索结果:
+If no results are relevant, suggest ways to improve the search query."""
+
+        user_prompt = f"""User Query: {query}
+
+Conversation History:
+{conversation_context}
+
+Search Results:
 {results_text}
 
-请分析这些结果与查询的相关性，并以JSON格式返回分析结果，格式如下:
+Please analyze these results and provide:
+1. For each result: relevance score (0-100) and reason
+2. Whether any results are relevant to the query (true/false)
+3. If no relevant results, suggestions for improving the search
+
+Format your response as JSON:
 {{
-  "has_relevant": true或false,
-  "analysis": "总体分析",
   "result_analysis": [
     {{
-      "index": 0,
-      "relevance_score": 1-10的分数,
-      "relevance_reason": "这条结果与查询相关的具体理由"
+      "result_index": 0,
+      "relevance_score": 85,
+      "relevance_reason": "Directly addresses the query with recent information"
     }},
     ...
   ],
-  "suggestions": "如果结果不相关，提供改进建议"
-}}
-"""})
+  "has_relevant": true,
+  "suggestions": "If you want more specific information, try..."
+}}"""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
         
-        # 使用 DeepSeek 分析结果
         response = openai.chat.completions.create(
             model="deepseek-chat",
             messages=messages,
-            max_tokens=800
+            max_tokens=1500
         )
         
         analysis_text = response.choices[0].message.content.strip()
         
-        # 尝试解析JSON响应
+        # Extract the JSON part from the response
         try:
-            import json
-            import re
+            # Find JSON content between curly braces
+            json_start = analysis_text.find('{')
+            json_end = analysis_text.rfind('}') + 1
             
-            # 尝试从文本中提取JSON部分
-            json_match = re.search(r'({[\s\S]*})', analysis_text)
-            if json_match:
-                analysis_json = json.loads(json_match.group(1))
+            if json_start >= 0 and json_end > json_start:
+                json_str = analysis_text[json_start:json_end]
+                analysis = json.loads(json_str)
             else:
-                # 如果无法提取，尝试直接解析
-                analysis_json = json.loads(analysis_text)
+                # Fallback if JSON parsing fails
+                analysis = {
+                    "result_analysis": [],
+                    "has_relevant": len(results) > 0,
+                    "suggestions": "Try using different keywords or be more specific."
+                }
             
-            # 获取相关性分析结果
-            has_relevant = analysis_json.get("has_relevant", False)
-            analysis = analysis_json.get("analysis", "")
-            result_analysis = analysis_json.get("result_analysis", [])
-            suggestions = analysis_json.get("suggestions", "")
-            
-            # 为每个结果添加相关性理由
+            # Process the analysis to include in the results
             relevant_results = []
             for i, result in enumerate(results):
-                if i < len(result_analysis):
-                    # 找到对应的分析结果
-                    for analysis_item in result_analysis:
-                        if analysis_item.get("index") == i:
-                            # 获取相关性得分
-                            relevance_score = analysis_item.get("relevance_score", 0)
-                            
-                            # 只添加得分高于7分的结果
-                            if relevance_score > 7:
-                                # 复制原始结果并添加相关性信息
-                                result_with_relevance = result.copy()
-                                result_with_relevance["relevance_score"] = relevance_score
-                                result_with_relevance["relevance_reason"] = analysis_item.get("relevance_reason", "")
-                                relevant_results.append(result_with_relevance)
-                            break
-                    else:
-                        # 如果没有找到对应的分析，不添加该结果
-                        pass
+                result_copy = result.copy()
+                
+                # Find the analysis for this result
+                result_analysis = None
+                for analysis_item in analysis.get("result_analysis", []):
+                    if analysis_item.get("result_index") == i:
+                        result_analysis = analysis_item
+                        break
+                
+                if result_analysis:
+                    result_copy["relevance_score"] = result_analysis.get("relevance_score", 0)
+                    result_copy["relevance_reason"] = result_analysis.get("relevance_reason", "")
                 else:
-                    # 如果分析结果不足，不添加该结果
-                    pass
+                    result_copy["relevance_score"] = 0
+                    result_copy["relevance_reason"] = "No analysis available"
+                
+                # Only include results with relevance score > 30
+                if result_copy.get("relevance_score", 0) > 30:
+                    relevant_results.append(result_copy)
             
-            # 如果没有相关结果，返回空列表
-            if not has_relevant:
-                relevant_results = []
-            
-            return {
-                "relevant_results": relevant_results,
-                "has_relevant": has_relevant,
-                "analysis": analysis,
-                "suggestions": suggestions if not has_relevant else None
-            }
-            
-        except json.JSONDecodeError as e:
-            print(f"JSON解析错误: {e}")
-            # 回退到简单的文本分析
-            has_relevant = "不相关" not in analysis_text.lower() and "没有相关" not in analysis_text.lower()
-            relevant_results = results if has_relevant else []
+            # Sort results by relevance score (descending)
+            relevant_results.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
             
             return {
+                "has_relevant": analysis.get("has_relevant", False) and len(relevant_results) > 0,
                 "relevant_results": relevant_results,
-                "has_relevant": has_relevant,
-                "analysis": analysis_text,
-                "suggestions": analysis_text if not has_relevant else None
+                "suggestions": analysis.get("suggestions", "")
             }
             
+        except Exception as e:
+            print(f"Error parsing analysis JSON: {e}")
+            print(f"Raw analysis text: {analysis_text}")
+            
+            # Fallback response
+            return {
+                "has_relevant": len(results) > 0,
+                "relevant_results": results,
+                "suggestions": "Try using different keywords or be more specific."
+            }
+    
     except Exception as e:
-        print(f"分析搜索结果时出错: {e}")
+        print(f"Error analyzing search results: {e}")
         return {
+            "has_relevant": len(results) > 0,
             "relevant_results": results,
-            "has_relevant": True,  # 默认假设结果相关
-            "suggestions": None
+            "suggestions": "An error occurred during analysis. Try refining your search."
         }
 
 def generate_response_message(query: str, analysis: Dict[str, Any]) -> str:
-    """生成助手的回复消息"""
+    """Generate assistant's response message"""
     try:
-        # 如果没有相关结果
-        if not analysis["has_relevant"] or not analysis["relevant_results"]:
-            if analysis.get("suggestions"):
-                return analysis["suggestions"]
-            else:
-                return f"我没有找到与'{query}'相关的新闻。请尝试使用其他关键词。"
+        has_relevant = analysis.get("has_relevant", False)
+        relevant_results = analysis.get("relevant_results", [])
+        suggestions = analysis.get("suggestions", "")
         
-        # 如果有相关结果
-        results = analysis["relevant_results"]
-        response = f"我找到了{len(results)}条与'{query}'相关的新闻：\n\n"
-        
-        for i, result in enumerate(results):
-            response += f"{i+1}. **{result.get('title', 'N/A')}**\n"
-            response += f"   来源: {result.get('source', 'N/A')}"
-            if result.get('date'):
-                from datetime import datetime
-                try:
-                    date = datetime.fromisoformat(result['date'].replace('Z', '+00:00'))
-                    response += f" | {date.strftime('%Y-%m-%d')}"
-                except:
-                    response += f" | {result['date']}"
-            response += "\n"
-            response += f"   {result.get('body', 'N/A')[:150]}...\n"
-            response += f"   [阅读全文]({result.get('url', '#')})\n\n"
+        if has_relevant and relevant_results:
+            # Format the top results for the response
+            top_results = relevant_results[:3]  # Take top 3 results
+            results_text = ""
             
-            if result.get("relevance_reason"):
-                response += f"   *相关性: {result.get('relevance_reason')}*\n\n"
+            for i, result in enumerate(top_results):
+                results_text += f"{i+1}. {result.get('title', '')}\n"
+                results_text += f"   Source: {result.get('source', '')}\n"
+                if result.get('date'):
+                    results_text += f"   Date: {result.get('date', '')}\n"
+                results_text += f"   {result.get('body', '')[:150]}...\n\n"
+            
+            response = f"Here are the most relevant results for your query about '{query}':\n\n{results_text}"
+            
+            if len(relevant_results) > 3:
+                response += f"I found {len(relevant_results)} relevant results in total. These are the top matches.\n"
+        else:
+            response = f"I couldn't find highly relevant news for '{query}'.\n\n"
+            if suggestions:
+                response += f"Suggestions to improve your search:\n{suggestions}"
+            else:
+                response += "Try using different keywords, be more specific, or broaden your search terms."
         
-        response += "您还想了解什么相关信息？"
         return response
-        
+    
     except Exception as e:
-        print(f"生成回复消息时出错: {e}")
-        return f"我找到了一些与'{query}'相关的新闻，但在处理结果时遇到了问题。请再次尝试或更改您的查询。"
+        print(f"Error generating response message: {e}")
+        return f"I searched for news about '{query}', but encountered an error processing the results. Please try again with different keywords."
 
-# API端点
+# API endpoints
 @app.post("/api/search", response_model=ApiResponse)
 async def search(query: SearchQuery):
     try:
-        # 处理会话ID
+        # Generate or use session ID
         session_id = query.session_id
         if not session_id:
-            # 如果没有提供会话ID，创建一个新的
             session_id = str(uuid.uuid4())
         
-        # 确保会话历史存在
+        # Ensure conversation history exists
         if session_id not in conversation_history:
             conversation_history[session_id] = []
         
-        # 添加用户消息到对话历史
+        # Add user message to conversation history
         user_message = Message(
             role="user",
             content=query.query,
@@ -367,21 +373,21 @@ async def search(query: SearchQuery):
         )
         conversation_history[session_id].append(user_message)
         
-        # 生成搜索查询
+        # Generate search query
         generated_query = generate_search_query(query.query, session_id)
-        print(f"原始查询: {query.query}")
-        print(f"生成的查询: {generated_query}")
+        print(f"Original query: {query.query}")
+        print(f"Generated query: {generated_query}")
         
-        # 搜索新闻
+        # Search for news
         search_results = search_news(generated_query)
         
-        # 分析搜索结果
+        # Analyze search results
         analysis = analyze_search_results(query.query, search_results, session_id)
         
-        # 生成助手回复
+        # Generate assistant response
         assistant_response = generate_response_message(query.query, analysis)
         
-        # 添加助手消息到对话历史
+        # Add assistant message to conversation history
         assistant_message = Message(
             role="assistant",
             content=assistant_response,
@@ -389,13 +395,13 @@ async def search(query: SearchQuery):
         )
         conversation_history[session_id].append(assistant_message)
         
-        # 创建当前对话
+        # Create current conversation
         current_conversation = Conversation(
             session_id=session_id,
             messages=conversation_history[session_id]
         )
         
-        # 准备响应数据
+        # Prepare response data
         response_data = SearchResponse(
             original_query=query.query,
             generated_query=generated_query,
@@ -424,15 +430,15 @@ async def search(query: SearchQuery):
         )
     
     except Exception as e:
-        print(f"处理搜索请求时出错: {e}")
+        print(f"Error processing search request: {e}")
         return ApiResponse(
             data=None,
             success=False,
             error_code=500,
-            error_message=f"服务器错误: {str(e)}"
+            error_message=f"Server error: {str(e)}"
         )
 
-# 获取对话历史的端点
+# Endpoint to get conversation history
 @app.get("/api/conversation/{session_id}", response_model=ApiResponse)
 async def get_conversation(session_id: str):
     if session_id not in conversation_history:
@@ -440,7 +446,7 @@ async def get_conversation(session_id: str):
             data={"conversation": None},
             success=False,
             error_code=404,
-            error_message="会话不存在"
+            error_message="Session does not exist"
         )
     
     current_conversation = Conversation(
@@ -455,23 +461,23 @@ async def get_conversation(session_id: str):
         error_message=""
     )
 
-# 清除对话历史的端点
+# Endpoint to clear conversation history
 @app.delete("/api/conversation/{session_id}", response_model=ApiResponse)
 async def clear_conversation(session_id: str):
     if session_id in conversation_history:
         del conversation_history[session_id]
     
     return ApiResponse(
-        data={"message": "会话已清除"},
+        data={"message": "Session cleared"},
         success=True,
         error_code=0,
         error_message=""
     )
 
-# 添加根路由，提供API信息
+# Add root route to provide API information
 @app.get("/")
 async def root():
-    return {"message": "欢迎使用新闻搜索API", "version": "1.0.0"}
+    return {"message": "Welcome to the News Search API", "version": "1.0.0"}
 
 if __name__ == "__main__":
     import uvicorn

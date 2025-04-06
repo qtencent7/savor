@@ -1,25 +1,25 @@
 import axios from './config';
 
-// 消息接口
+// Message interface
 export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
 }
 
-// 对话接口
+// Conversation interface
 export interface Conversation {
   session_id: string;
   messages: Message[];
 }
 
-// 搜索请求接口
+// Search request interface
 export interface SearchRequest {
   query: string;
   session_id?: string;
 }
 
-// 搜索结果接口
+// Search result interface
 export interface SearchResult {
   title: string;
   url: string;
@@ -31,7 +31,7 @@ export interface SearchResult {
   relevance_reason?: string;
 }
 
-// 搜索响应接口
+// Search response interface
 export interface SearchResponse {
   original_query: string;
   generated_query?: string;
@@ -41,7 +41,7 @@ export interface SearchResponse {
   conversation?: Conversation;
 }
 
-// API响应接口
+// API response interface
 export interface ApiResponse<T> {
   data: T;
   success: boolean;
@@ -50,10 +50,10 @@ export interface ApiResponse<T> {
 }
 
 /**
- * 搜索新闻
- * @param query 搜索关键词
- * @param sessionId 会话ID，如果不提供则创建新会话
- * @returns 搜索结果
+ * Search for news
+ * @param query Search keyword
+ * @param sessionId Session ID, if not provided a new session will be created
+ * @returns Search results
  */
 export const searchNews = async (query: string, sessionId?: string): Promise<SearchResponse> => {
   try {
@@ -63,52 +63,52 @@ export const searchNews = async (query: string, sessionId?: string): Promise<Sea
     });
     
     if (!response.data.success) {
-      throw new Error(response.data.error_message || '搜索失败');
+      throw new Error(response.data.error_message || 'Search failed');
     }
     
     return response.data.data;
   } catch (error) {
-    console.error('搜索新闻出错:', error);
+    console.error('Error searching news:', error);
     throw error;
   }
 };
 
 /**
- * 获取对话历史
- * @param sessionId 会话ID
- * @returns 对话历史
+ * Get conversation history
+ * @param sessionId Session ID
+ * @returns Conversation history
  */
 export const getConversation = async (sessionId: string): Promise<Conversation> => {
   try {
     const response = await axios.get<ApiResponse<{conversation: Conversation}>>(`/api/conversation/${sessionId}`);
     
     if (!response.data.success) {
-      throw new Error(response.data.error_message || '获取对话历史失败');
+      throw new Error(response.data.error_message || 'Failed to get conversation history');
     }
     
     return response.data.data.conversation;
   } catch (error) {
-    console.error('获取对话历史出错:', error);
+    console.error('Error getting conversation history:', error);
     throw error;
   }
 };
 
 /**
- * 清除对话历史
- * @param sessionId 会话ID
- * @returns 成功消息
+ * Clear conversation history
+ * @param sessionId Session ID
+ * @returns Success message
  */
 export const clearConversation = async (sessionId: string): Promise<{message: string}> => {
   try {
     const response = await axios.delete<ApiResponse<{message: string}>>(`/api/conversation/${sessionId}`);
     
     if (!response.data.success) {
-      throw new Error(response.data.error_message || '清除对话历史失败');
+      throw new Error(response.data.error_message || 'Failed to clear conversation history');
     }
     
     return response.data.data;
   } catch (error) {
-    console.error('清除对话历史出错:', error);
+    console.error('Error clearing conversation history:', error);
     throw error;
   }
 };
