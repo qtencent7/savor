@@ -126,6 +126,22 @@ function App() {
                       }
                     />
                     <Paragraph ellipsis={{ rows: 3 }}>{item.body}</Paragraph>
+                    {item.relevance_reason && (
+                      <div className="relevance-reason">
+                        <Text type="secondary" strong>相关性分析：</Text>
+                        <Paragraph type="secondary" style={{ margin: 0 }}>
+                          {item.relevance_score && (
+                            <Text type="secondary">
+                              相关度评分：
+                              <Text type={item.relevance_score > 7 ? 'success' : item.relevance_score > 4 ? 'warning' : 'danger'}>
+                                {item.relevance_score}/10
+                              </Text>
+                            </Text>
+                          )}
+                          <div>{item.relevance_reason}</div>
+                        </Paragraph>
+                      </div>
+                    )}
                   </List.Item>
                 )}
               />

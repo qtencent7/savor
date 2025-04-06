@@ -9,6 +9,8 @@ export interface SearchResult {
   source: string;
   image?: string;
   date?: string;
+  relevance_score?: number;
+  relevance_reason?: string;
 }
 
 // 搜索响应接口

@@ -69,6 +69,32 @@
       .ant-typography {
         color: @text-color;
       }
+      
+      .relevance-reason {
+        margin-top: @spacing-md;
+        padding: @spacing-sm @spacing-md;
+        background-color: fade(@secondary-color, 70%);
+        border-radius: @border-radius-base;
+        border-left: 3px solid @primary-color;
+        
+        .ant-typography {
+          &.ant-typography-secondary {
+            color: @text-color-secondary;
+          }
+          
+          &.ant-typography-success {
+            color: @success-color;
+          }
+          
+          &.ant-typography-warning {
+            color: @warning-color;
+          }
+          
+          &.ant-typography-danger {
+            color: @error-color;
+          }
+        }
+      }
     }
     
     .ant-empty {

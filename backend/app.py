@@ -41,6 +41,8 @@ class SearchResult(BaseModel):
     source: str
     image: Optional[str] = None
     date: Optional[str] = None
+    relevance_score: Optional[int] = None
+    relevance_reason: Optional[str] = None
 
 class SearchResponse(BaseModel):
     original_query: str
@@ -98,30 +100,100 @@ def analyze_search_results(query: str, results: List[Dict[str, Any]]) -> Dict[st
             results_text += f"   来源: {result.get('source', 'N/A')}\n"
             results_text += f"   摘要: {result.get('body', 'N/A')}\n\n"
         
-        # 使用 OpenAI 分析结果
+        # 使用 DeepSeek 分析结果
         response = openai.chat.completions.create(
             model="deepseek-chat",
             messages=[
-                {"role": "system", "content": "你是一个帮助分析搜索结果相关性的助手。评估搜索结果与查询的相关性，并提供改进建议。"},
-                {"role": "user", "content": f"查询: {query}\n\n搜索结果:\n{results_text}\n\n这些结果与查询相关吗？如果相关，哪些是最相关的？如果不相关，请提供改进搜索查询的建议。"}
+                {"role": "system", "content": "你是一个帮助分析搜索结果相关性的助手。评估搜索结果与查询的相关性，并提供改进建议。对于每个相关的结果，请提供具体的相关性理由。"},
+                {"role": "user", "content": f"""查询: {query}
+
+搜索结果:
+{results_text}
+
+请分析这些结果与查询的相关性，并以JSON格式返回分析结果，格式如下:
+{{
+  "has_relevant": true或false,
+  "analysis": "总体分析",
+  "result_analysis": [
+    {{
+      "index": 0,
+      "relevance_score": 1-10的分数,
+      "relevance_reason": "这条结果与查询相关的具体理由"
+    }},
+    ...
+  ],
+  "suggestions": "如果结果不相关，提供改进建议"
+}}
+"""}
             ],
-            max_tokens=300
+            max_tokens=800
         )
         
-        analysis = response.choices[0].message.content.strip()
+        analysis_text = response.choices[0].message.content.strip()
         
-        # 判断是否有相关结果
-        has_relevant = "不相关" not in analysis.lower() and "没有相关" not in analysis.lower()
-        
-        # 提取最相关的结果
-        relevant_results = results if has_relevant else []
-        
-        return {
-            "relevant_results": relevant_results,
-            "has_relevant": has_relevant,
-            "analysis": analysis,
-            "suggestions": analysis if not has_relevant else None
-        }
+        # 尝试解析JSON响应
+        try:
+            import json
+            import re
+            
+            # 尝试从文本中提取JSON部分
+            json_match = re.search(r'({[\s\S]*})', analysis_text)
+            if json_match:
+                analysis_json = json.loads(json_match.group(1))
+            else:
+                # 如果无法提取，尝试直接解析
+                analysis_json = json.loads(analysis_text)
+            
+            # 获取相关性分析结果
+            has_relevant = analysis_json.get("has_relevant", False)
+            analysis = analysis_json.get("analysis", "")
+            result_analysis = analysis_json.get("result_analysis", [])
+            suggestions = analysis_json.get("suggestions", "")
+            
+            # 为每个结果添加相关性理由
+            relevant_results = []
+            for i, result in enumerate(results):
+                if i < len(result_analysis):
+                    # 找到对应的分析结果
+                    for analysis_item in result_analysis:
+                        if analysis_item.get("index") == i:
+                            # 复制原始结果并添加相关性信息
+                            result_with_relevance = result.copy()
+                            result_with_relevance["relevance_score"] = analysis_item.get("relevance_score", 0)
+                            result_with_relevance["relevance_reason"] = analysis_item.get("relevance_reason", "")
+                            relevant_results.append(result_with_relevance)
+                            break
+                    else:
+                        # 如果没有找到对应的分析，添加原始结果
+                        relevant_results.append(result)
+                else:
+                    # 如果分析结果不足，添加原始结果
+                    relevant_results.append(result)
+            
+            # 如果没有相关结果，返回空列表
+            if not has_relevant:
+                relevant_results = []
+            
+            return {
+                "relevant_results": relevant_results,
+                "has_relevant": has_relevant,
+                "analysis": analysis,
+                "suggestions": suggestions if not has_relevant else None
+            }
+            
+        except json.JSONDecodeError as e:
+            print(f"JSON解析错误: {e}")
+            # 回退到简单的文本分析
+            has_relevant = "不相关" not in analysis_text.lower() and "没有相关" not in analysis_text.lower()
+            relevant_results = results if has_relevant else []
+            
+            return {
+                "relevant_results": relevant_results,
+                "has_relevant": has_relevant,
+                "analysis": analysis_text,
+                "suggestions": analysis_text if not has_relevant else None
+            }
+            
     except Exception as e:
         print(f"分析搜索结果时出错: {e}")
         return {
@@ -160,7 +232,9 @@ async def search(query: SearchQuery):
                     body=result.get("body", ""),
                     source=result.get("source", ""),
                     image=result.get("image", None),
-                    date=result.get("date", None)
+                    date=result.get("date", None),
+                    relevance_score=result.get("relevance_score", None),
+                    relevance_reason=result.get("relevance_reason", None)
                 ) for result in analysis["relevant_results"]
             ],
             has_relevant_results=analysis["has_relevant"],
