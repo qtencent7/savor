@@ -17,7 +17,7 @@ This is an intelligent application that uses DuckDuckGo or Google to search for 
 ```
 savor/
 ├── backend/             # Python backend
-│   ├── app.py           # Flask application main file
+│   ├── app.py           # FastAPI application main file
 │   ├── requirements.txt # Dependencies
 │   └── .env.example     # Environment variables example file
 └── frontend/            # React frontend
@@ -94,7 +94,7 @@ savor/
 ## Technology Stack
 
 - Frontend: React, TypeScript, Vite, Ant Design
-- Backend: Python, Flask, DuckDuckGo Search API, OpenAI API
+- Backend: Python, fastapi, DuckDuckGo Search API, OpenAI API
 
 ## Notes
 
