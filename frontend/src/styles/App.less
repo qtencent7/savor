@@ -1,0 +1,153 @@
+@import './variables.less';
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  
+  .app-header {
+    display: flex;
+    align-items: center;
+    background-color: @primary-color;
+    padding: 0 @spacing-lg;
+    height: 64px;
+    
+    h3 {
+      color: white;
+      margin: 0;
+    }
+  }
+  
+  .app-content {
+    flex: 1;
+    padding: @spacing-lg;
+    max-width: @screen-xl;
+    margin: 0 auto;
+    width: 100%;
+    
+    .search-container {
+      margin-bottom: @spacing-xl;
+      
+      .search-tip {
+        margin-top: @spacing-sm;
+        color: @text-color-secondary;
+        font-size: @font-size-base;
+      }
+    }
+    
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: @spacing-xxl 0;
+      
+      .ant-spin {
+        margin-bottom: @spacing-md;
+      }
+    }
+    
+    .ant-list-item {
+      transition: all @animation-duration-base;
+      border-radius: @border-radius-base;
+      
+      &:hover {
+        background-color: fade(@primary-color, 5%);
+      }
+      
+      .ant-list-item-meta-title {
+        > a {
+          color: @heading-color;
+          font-weight: 500;
+          
+          &:hover {
+            color: @primary-color;
+          }
+        }
+      }
+      
+      .ant-typography {
+        color: @text-color;
+      }
+    }
+    
+    .ant-empty {
+      margin: @spacing-xl 0;
+      
+      .markdown-suggestion {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: @spacing-md @spacing-lg;
+        background-color: @secondary-color;
+        border-radius: @border-radius-base;
+        border-left: 4px solid @primary-color;
+        text-align: left;
+        
+        h3 {
+          color: @primary-color;
+          margin-top: 0;
+          margin-bottom: @spacing-md;
+          font-size: 16px;
+        }
+        
+        p {
+          margin-bottom: @spacing-sm;
+          line-height: 1.6;
+        }
+        
+        strong {
+          color: @primary-color;
+          font-weight: 500;
+        }
+        
+        em {
+          color: @text-color-secondary;
+          font-style: italic;
+        }
+        
+        ul, ol {
+          padding-left: @spacing-lg;
+          
+          li {
+            margin-bottom: @spacing-xs;
+          }
+        }
+      }
+    }
+    
+    .ant-alert {
+      margin-bottom: @spacing-md;
+    }
+  }
+  
+  .app-footer {
+    text-align: center;
+    background-color: @secondary-color;
+    padding: @spacing-md 0;
+  }
+}
+
+// 响应式设计
+@media (max-width: @screen-md) {
+  .app-container {
+    .app-content {
+      padding: @spacing-md;
+      
+      .search-container {
+        margin-bottom: @spacing-lg;
+      }
+    }
+  }
+}
+
+@media (max-width: @screen-sm) {
+  .app-container {
+    .app-header {
+      padding: 0 @spacing-md;
+    }
+    
+    .app-content {
+      padding: @spacing-sm;
+    }
+  }
+}

@@ -1,0 +1,6 @@
+frontend/node_modules
+backend/.env
+backend/__pycache__
+
+# windsurf rules
+.windsurfrules
