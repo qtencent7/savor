@@ -1,12 +1,16 @@
-# DuckDuckGo 新闻搜索 Agent
+# 新闻搜索 Agent
 
-这是一个使用DuckDuckGo搜索新闻的智能应用，前端采用React，后端采用Python。应用流程如下：
+这是一个使用DuckDuckGo或Google搜索新闻的智能应用，前端采用React，后端采用Python。应用流程如下：
 
 1. 用户输入搜索主题
 2. AI生成优化的搜索查询
-3. 系统使用DuckDuckGo搜索相关新闻
+3. 系统使用DuckDuckGo或Google搜索相关新闻
 4. AI分析搜索结果，返回最相关的内容
 5. 如果没有找到相关结果，系统会提示用户缩小搜索范围并给出建议
+
+## 多轮对话截图
+![多轮对话截图](./imgs/1.png)
+
 
 ## 项目结构
 
@@ -49,7 +53,7 @@ savor/
    ```
    # 复制示例文件
    copy .env.example .env
-   # 编辑.env文件，添加你的OpenAI API密钥
+   # 编辑.env文件，添加你的OpenAI API密钥、DeepSeek API密钥、SERPAPI API密钥和搜索引擎选择
    ```
 
 5. 运行后端服务：
@@ -94,6 +98,6 @@ savor/
 
 ## 注意事项
 
-- 使用前需要设置有效的OpenAI API密钥
-- 确保网络连接正常，以便访问DuckDuckGo和OpenAI服务
-- 搜索结果质量取决于搜索查询的具体内容和DuckDuckGo的搜索结果
+- 使用前需要设置有效的OpenAI API密钥、DeepSeek API密钥、SERPAPI API密钥和搜索引擎选择
+- 确保网络连接正常，以便访问DuckDuckGo、Google、DeepSeek和OpenAI服务
+- 搜索结果质量取决于搜索查询的具体内容和DuckDuckGo、Google的搜索结果

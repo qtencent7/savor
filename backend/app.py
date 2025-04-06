@@ -10,6 +10,7 @@ import openai
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
+from serpapi import GoogleSearch
 
 print(f"DuckDuckGo Search version: {duckduckgo_search.__version__}")
 
@@ -17,7 +18,7 @@ print(f"DuckDuckGo Search version: {duckduckgo_search.__version__}")
 load_dotenv()
 
 # 初始化 FastAPI 应用
-app = FastAPI(title="DuckDuckGo 新闻搜索 API", description="使用DuckDuckGo搜索新闻的API")
+app = FastAPI(title="新闻搜索 API", description="使用DuckDuckGo或Google搜索新闻的API")
 
 # 配置CORS
 app.add_middleware(
@@ -31,6 +32,10 @@ app.add_middleware(
 # 配置 OpenAI API
 openai_api_key = os.getenv("OPENAI_API_KEY", "")
 deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
+serpapi_api_key = os.getenv("SERPAPI_API_KEY", "")
+
+# 搜索引擎选择 ("duckduckgo" 或 "google")
+SEARCH_ENGINE = os.getenv("SEARCH_ENGINE", "google")
 
 # 设置API密钥
 if deepseek_api_key:
@@ -40,6 +45,8 @@ if deepseek_api_key:
 else:
     openai.api_key = openai_api_key
     print(f"使用 OpenAI API 密钥")
+
+print(f"当前搜索引擎: {SEARCH_ENGINE}")
 
 # 对话历史存储
 # 使用字典存储对话历史，键为会话ID，值为消息列表
@@ -120,6 +127,49 @@ def search_duckduckgo(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
     except Exception as e:
         print(f"搜索 DuckDuckGo 时出错: {e}")
         return []
+
+def search_google(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
+    """使用 Google 搜索新闻"""
+    try:
+        if not serpapi_api_key:
+            print("未设置 SERPAPI_API_KEY，无法使用 Google 搜索")
+            return []
+            
+        search_params = {
+            "engine": "google",
+            "q": query,
+            "tbm": "nws",  # 新闻搜索
+            "num": max_results,
+            "api_key": serpapi_api_key
+        }
+        
+        search = GoogleSearch(search_params)
+        results = search.get_dict()
+        
+        # 转换为与DuckDuckGo相同的格式
+        formatted_results = []
+        if "news_results" in results:
+            for item in results["news_results"]:
+                formatted_results.append({
+                    "title": item.get("title", ""),
+                    "url": item.get("link", ""),
+                    "body": item.get("snippet", ""),
+                    "source": item.get("source", ""),
+                    "date": item.get("date", ""),
+                    "image": item.get("thumbnail", None)
+                })
+        
+        return formatted_results
+    except Exception as e:
+        print(f"搜索 Google 时出错: {e}")
+        return []
+
+def search_news(query: str, max_results: int = 5) -> List[Dict[str, Any]]:
+    """根据选择的搜索引擎搜索新闻"""
+    if SEARCH_ENGINE.lower() == "google":
+        return search_google(query, max_results)
+    else:
+        return search_duckduckgo(query, max_results)
 
 def analyze_search_results(query: str, results: List[Dict[str, Any]], session_id: Optional[str] = None) -> Dict[str, Any]:
     """使用 DeepSeek 分析搜索结果的相关性，考虑对话历史"""
@@ -323,7 +373,7 @@ async def search(query: SearchQuery):
         print(f"生成的查询: {generated_query}")
         
         # 搜索新闻
-        search_results = search_duckduckgo(generated_query)
+        search_results = search_news(generated_query)
         
         # 分析搜索结果
         analysis = analyze_search_results(query.query, search_results, session_id)
@@ -421,7 +471,7 @@ async def clear_conversation(session_id: str):
 # 添加根路由，提供API信息
 @app.get("/")
 async def root():
-    return {"message": "欢迎使用DuckDuckGo新闻搜索API", "version": "1.0.0"}
+    return {"message": "欢迎使用新闻搜索API", "version": "1.0.0"}
 
 if __name__ == "__main__":
     import uvicorn
