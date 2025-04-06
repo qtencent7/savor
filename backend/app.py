@@ -35,7 +35,7 @@ deepseek_api_key = os.getenv("DEEPSEEK_API_KEY", "")
 serpapi_api_key = os.getenv("SERPAPI_API_KEY", "")
 
 # 搜索引擎选择 ("duckduckgo" 或 "google")
-SEARCH_ENGINE = os.getenv("SEARCH_ENGINE", "google")
+SEARCH_ENGINE = os.getenv("SEARCH_ENGINE", "duckduckgo")
 
 # 设置API密钥
 if deepseek_api_key:
