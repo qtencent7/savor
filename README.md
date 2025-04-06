@@ -109,3 +109,4 @@ savor/
   - Implement API for saving chat records
   - Implement API for querying historical chat records
   - Add user authentication to associate chat history
+  - support internationalization search
