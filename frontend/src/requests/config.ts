@@ -1,12 +1,4 @@
-import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
-
-// 定义API响应的通用格式
-export interface ApiResponse<T = any> {
-  data: T;
-  error_code: number;
-  success: boolean;
-  error_message: string;
-}
+import axios from 'axios';
 
 // 创建axios实例
 const instance = axios.create({
@@ -19,22 +11,22 @@ const instance = axios.create({
 
 // 请求拦截器
 instance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  (config) => {
     // 在这里可以添加全局的请求处理，例如添加token等
     return config;
   },
-  (error: AxiosError) => {
+  (error) => {
     return Promise.reject(error);
   }
 );
 
 // 响应拦截器
 instance.interceptors.response.use(
-  (response: AxiosResponse) => {
+  (response) => {
     // 直接返回响应数据
     return response;
   },
-  (error: AxiosError) => {
+  (error) => {
     // 处理错误响应
     if (error.response) {
       // 服务器返回了错误状态码

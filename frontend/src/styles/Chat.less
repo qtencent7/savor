@@ -1,0 +1,287 @@
+@import './variables.less';
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  .chat-header {
+    padding: @spacing-md @spacing-lg;
+    background-color: @primary-color;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    h3 {
+      margin: 0;
+      color: white;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: @spacing-sm;
+    }
+  }
+  
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: @spacing-lg;
+    background-color: @secondary-color;
+    
+    .message {
+      margin-bottom: @spacing-lg;
+      max-width: 85%;
+      
+      &.user-message {
+        margin-left: auto;
+        
+        .message-content {
+          background-color: @primary-color;
+          color: white;
+          border-radius: @border-radius-lg @border-radius-lg 0 @border-radius-lg;
+        }
+      }
+      
+      &.assistant-message {
+        margin-right: auto;
+        
+        .message-content {
+          background-color: white;
+          color: @text-color;
+          border-radius: 0 @border-radius-lg @border-radius-lg @border-radius-lg;
+          
+          h1, h2, h3 {
+            margin-top: 0;
+            margin-bottom: @spacing-sm;
+            color: @heading-color;
+          }
+          
+          a {
+            color: @link-color;
+            text-decoration: none;
+            
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+          
+          strong {
+            color: @primary-color;
+            font-weight: 500;
+          }
+          
+          em {
+            color: @text-color-secondary;
+          }
+          
+          ul, ol {
+            margin: @spacing-sm 0;
+            padding-left: @spacing-lg;
+          }
+          
+          li {
+            margin-bottom: @spacing-xs;
+          }
+          
+          // 搜索结果样式
+          .search-results {
+            margin-top: @spacing-md;
+            
+            .ant-list-item {
+              transition: all 0.3s;
+              border-radius: @border-radius-base;
+              margin-bottom: @spacing-md;
+              padding: @spacing-sm;
+              background-color: @secondary-color;
+              
+              &:hover {
+                background-color: fade(@primary-color, 5%);
+              }
+              
+              .ant-list-item-meta-title {
+                > a {
+                  color: @heading-color;
+                  font-weight: 500;
+                  
+                  &:hover {
+                    color: @primary-color;
+                  }
+                }
+              }
+              
+              .ant-typography {
+                color: @text-color;
+              }
+              
+              .relevance-reason {
+                margin-top: @spacing-sm;
+                padding: @spacing-sm;
+                background-color: fade(@secondary-color, 50%);
+                border-radius: @border-radius-base;
+                border-left: 3px solid @primary-color;
+              }
+              
+              // 图片样式
+              .ant-list-item-extra {
+                margin-left: @spacing-md;
+                
+                img {
+                  border-radius: @border-radius-base;
+                  object-fit: cover;
+                  max-width: 100%;
+                  height: auto;
+                }
+              }
+            }
+            
+            .ant-empty {
+              margin: @spacing-md 0;
+              
+              .no-results-message {
+                max-width: 300px;
+                margin: @spacing-sm auto 0;
+              }
+            }
+          }
+        }
+      }
+      
+      .message-content {
+        padding: @spacing-md;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        word-break: break-word;
+      }
+      
+      .message-meta {
+        font-size: @font-size-sm;
+        color: @text-color-secondary;
+        margin-top: @spacing-xs;
+        display: flex;
+        align-items: center;
+        
+        .message-time {
+          margin-left: auto;
+        }
+      }
+    }
+    
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      margin-bottom: @spacing-lg;
+      
+      .dots {
+        display: flex;
+        align-items: center;
+        
+        .dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: @text-color-secondary;
+          margin-right: 4px;
+          animation: pulse 1.5s infinite;
+          
+          &:nth-child(2) {
+            animation-delay: 0.2s;
+          }
+          
+          &:nth-child(3) {
+            animation-delay: 0.4s;
+            margin-right: 0;
+          }
+        }
+      }
+    }
+  }
+  
+  .chat-input {
+    padding: @spacing-md;
+    background-color: white;
+    border-top: 1px solid @border-color;
+    
+    .input-container {
+      display: flex;
+      align-items: flex-end;
+      
+      .ant-input {
+        resize: none;
+        padding: @spacing-sm;
+        min-height: 24px;
+        max-height: 120px;
+        border-radius: @border-radius-base;
+      }
+      
+      .send-button {
+        margin-left: @spacing-sm;
+      }
+    }
+    
+    .input-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: @spacing-xs;
+      
+      .action-buttons {
+        display: flex;
+        gap: @spacing-sm;
+      }
+      
+      .typing-status {
+        font-size: @font-size-sm;
+        color: @text-color-secondary;
+      }
+    }
+  }
+}
+
+// 动画
+@keyframes pulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+// 响应式设计
+@media (max-width: @screen-md) {
+  .chat-container {
+    .chat-messages {
+      padding: @spacing-md;
+      
+      .message {
+        max-width: 90%;
+      }
+    }
+    
+    .chat-input {
+      padding: @spacing-sm;
+    }
+  }
+}
+
+@media (max-width: @screen-sm) {
+  .chat-container {
+    .chat-messages {
+      padding: @spacing-sm;
+      
+      .message {
+        max-width: 95%;
+        
+        .message-content {
+          padding: @spacing-sm;
+        }
+      }
+    }
+  }
+}

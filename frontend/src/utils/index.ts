@@ -55,3 +55,54 @@ export const formatSuggestionToMarkdown = (suggestion: string): string => {
   // 添加Markdown标题和格式化内容
   return `### 搜索建议\n\n${formattedParagraphs.join('\n\n')}`;
 };
+
+/**
+ * 生成唯一ID
+ * @returns 唯一ID字符串
+ */
+export const generateId = (): string => {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
+/**
+ * 将链接转换为可点击的HTML链接
+ * @param text 包含链接的文本
+ * @returns 处理后的HTML
+ */
+export const linkify = (text: string): string => {
+  // 匹配Markdown链接格式 [text](url)
+  const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  return text.replace(markdownLinkRegex, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+};
+
+/**
+ * 处理助手消息的Markdown内容
+ * @param content 助手消息内容
+ * @returns 处理后的HTML内容
+ */
+export const processAssistantMessage = (content: string): string => {
+  if (!content) return '';
+
+  // 处理Markdown格式
+  let processed = content
+    // 处理标题
+    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+
+    // 处理粗体和斜体
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+
+    // 处理列表
+    .replace(/^\s*\d+\.\s+(.*$)/gm, '<li>$1</li>')
+    .replace(/^\s*[-*]\s+(.*$)/gm, '<li>$1</li>')
+
+    // 处理换行
+    .replace(/\n\n/g, '<br/><br/>');
+
+  // 处理链接
+  processed = linkify(processed);
+
+  return processed;
+};

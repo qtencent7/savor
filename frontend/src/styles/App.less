@@ -1,4 +1,8 @@
 @import './variables.less';
+@import './Chat.less';
+
+// 添加缺失的变量
+@layout-header-background: @primary-color;
 
 .app-container {
   min-height: 100vh;
@@ -26,12 +30,14 @@
     width: 100%;
     
     .search-container {
-      margin-bottom: @spacing-xl;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: @spacing-lg;
       
       .search-tip {
         margin-top: @spacing-sm;
         color: @text-color-secondary;
-        font-size: @font-size-base;
+        font-size: @font-size-sm;
       }
     }
     
@@ -40,7 +46,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: @spacing-xxl 0;
+      padding: @spacing-lg;
       
       .ant-spin {
         margin-bottom: @spacing-md;
@@ -71,9 +77,9 @@
       }
       
       .relevance-reason {
-        margin-top: @spacing-md;
-        padding: @spacing-sm @spacing-md;
-        background-color: fade(@secondary-color, 70%);
+        margin-top: @spacing-sm;
+        padding: @spacing-sm;
+        background-color: @secondary-color;
         border-radius: @border-radius-base;
         border-left: 3px solid @primary-color;
         
@@ -103,40 +109,22 @@
       .markdown-suggestion {
         max-width: 600px;
         margin: 0 auto;
-        padding: @spacing-md @spacing-lg;
+        text-align: left;
+        padding: @spacing-md;
         background-color: @secondary-color;
         border-radius: @border-radius-base;
-        border-left: 4px solid @primary-color;
-        text-align: left;
         
         h3 {
-          color: @primary-color;
           margin-top: 0;
-          margin-bottom: @spacing-md;
-          font-size: 16px;
-        }
-        
-        p {
-          margin-bottom: @spacing-sm;
-          line-height: 1.6;
-        }
-        
-        strong {
-          color: @primary-color;
-          font-weight: 500;
-        }
-        
-        em {
-          color: @text-color-secondary;
-          font-style: italic;
+          color: @heading-color;
         }
         
         ul, ol {
           padding-left: @spacing-lg;
-          
-          li {
-            margin-bottom: @spacing-xs;
-          }
+        }
+        
+        strong {
+          color: @primary-color;
         }
       }
     }
@@ -148,8 +136,9 @@
   
   .app-footer {
     text-align: center;
-    background-color: @secondary-color;
-    padding: @spacing-md 0;
+    background-color: @layout-header-background;
+    color: rgba(255, 255, 255, 0.65);
+    padding: @spacing-sm;
   }
 }
 
@@ -160,7 +149,7 @@
       padding: @spacing-md;
       
       .search-container {
-        margin-bottom: @spacing-lg;
+        padding: @spacing-md;
       }
     }
   }
@@ -174,6 +163,10 @@
     
     .app-content {
       padding: @spacing-sm;
+      
+      .search-container {
+        padding: @spacing-sm;
+      }
     }
   }
 }
