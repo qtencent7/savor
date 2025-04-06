@@ -86,62 +86,74 @@
           }
           
           // 搜索结果样式
-          .search-results {
-            margin-top: @spacing-md;
+          .search-results-intro {
+            margin-bottom: @spacing-md;
             
-            .ant-list-item {
-              transition: all 0.3s;
-              border-radius: @border-radius-base;
-              margin-bottom: @spacing-md;
+            .generated-query {
+              margin: @spacing-sm 0;
               padding: @spacing-sm;
               background-color: @secondary-color;
+              border-radius: @border-radius-base;
+              border-left: 3px solid @primary-color;
+            }
+            
+            .search-results {
+              margin-top: @spacing-md;
               
-              &:hover {
-                background-color: fade(@primary-color, 5%);
-              }
-              
-              .ant-list-item-meta-title {
-                > a {
-                  color: @heading-color;
-                  font-weight: 500;
+              .ant-list-item {
+                transition: all 0.3s;
+                border-radius: @border-radius-base;
+                margin-bottom: @spacing-md;
+                padding: @spacing-sm;
+                background-color: @secondary-color;
+                
+                &:hover {
+                  background-color: fade(@primary-color, 5%);
+                }
+                
+                .ant-list-item-meta-title {
+                  > a {
+                    color: @heading-color;
+                    font-weight: 500;
+                    
+                    &:hover {
+                      color: @primary-color;
+                    }
+                  }
+                }
+                
+                .ant-typography {
+                  color: @text-color;
+                }
+                
+                .relevance-reason {
+                  margin-top: @spacing-sm;
+                  padding: @spacing-sm;
+                  background-color: fade(@secondary-color, 50%);
+                  border-radius: @border-radius-base;
+                  border-left: 3px solid @primary-color;
+                }
+                
+                // 图片样式
+                .ant-list-item-extra {
+                  margin-left: @spacing-md;
                   
-                  &:hover {
-                    color: @primary-color;
+                  img {
+                    border-radius: @border-radius-base;
+                    object-fit: cover;
+                    max-width: 100%;
+                    height: auto;
                   }
                 }
               }
               
-              .ant-typography {
-                color: @text-color;
-              }
-              
-              .relevance-reason {
-                margin-top: @spacing-sm;
-                padding: @spacing-sm;
-                background-color: fade(@secondary-color, 50%);
-                border-radius: @border-radius-base;
-                border-left: 3px solid @primary-color;
-              }
-              
-              // 图片样式
-              .ant-list-item-extra {
-                margin-left: @spacing-md;
+              .ant-empty {
+                margin: @spacing-md 0;
                 
-                img {
-                  border-radius: @border-radius-base;
-                  object-fit: cover;
-                  max-width: 100%;
-                  height: auto;
+                .no-results-message {
+                  max-width: 300px;
+                  margin: @spacing-sm auto 0;
                 }
-              }
-            }
-            
-            .ant-empty {
-              margin: @spacing-md 0;
-              
-              .no-results-message {
-                max-width: 300px;
-                margin: @spacing-sm auto 0;
               }
             }
           }

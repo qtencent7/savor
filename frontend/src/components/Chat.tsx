@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, Typography, Layout, Tooltip, message, List, Space, Empty } from 'antd';
 import { SendOutlined, DeleteOutlined } from '@ant-design/icons';
 import { searchNews, Message, clearConversation, SearchResult } from '../requests';
-import { processAssistantMessage, generateId, formatDate } from '../utils';
+import { generateId, formatDate } from '../utils';
 import '../styles/Chat.less';
 
 const { Text, Paragraph } = Typography;
@@ -13,6 +13,7 @@ interface ChatMessage extends Message {
   id: string; // 本地消息ID
   results?: SearchResult[]; // 搜索结果
   has_relevant_results?: boolean; // 是否有相关结果
+  generated_query?: string; // 生成的搜索查询
 }
 
 const Chat: React.FC = () => {
@@ -87,7 +88,8 @@ const Chat: React.FC = () => {
           content: latestAssistantMessage.content,
           timestamp: latestAssistantMessage.timestamp,
           results: response.results || [],
-          has_relevant_results: response.has_relevant_results
+          has_relevant_results: response.has_relevant_results,
+          generated_query: response.generated_query
         };
         
         setMessages(prev => [...prev, assistantMessage]);
@@ -215,12 +217,20 @@ const Chat: React.FC = () => {
                   {item.relevance_score && (
                     <Text type="secondary">
                       相关度评分：
-                      <Text type={item.relevance_score > 7 ? 'success' : item.relevance_score > 4 ? 'warning' : 'danger'}>
+                      <Text 
+                        type={item.relevance_score > 7 ? 'success' : item.relevance_score > 4 ? 'warning' : 'danger'}
+                        strong
+                        style={{ 
+                          fontSize: '16px', 
+                          padding: '0 6px',
+                          borderRadius: '4px'
+                        }}
+                      >
                         {item.relevance_score}/10
                       </Text>
                     </Text>
                   )}
-                  <div>{item.relevance_reason}</div>
+                  <div><span>推荐原因：</span>{item.relevance_reason}</div>
                 </Paragraph>
               </div>
             )}
@@ -257,11 +267,27 @@ const Chat: React.FC = () => {
                 message.content
               ) : (
                 <>
-                  <div dangerouslySetInnerHTML={{ __html: processAssistantMessage(message.content) }} />
-                  {message.results && message.results.length > 0 && (
-                    <div className="search-results">
-                      {renderSearchResults(message.results, message.has_relevant_results || false)}
+                  {message.results && message.results.length > 0 ? (
+                    <div className="search-results-intro">
+                      <Text>找到了 {message.results.length} 条相关信息</Text>
+                      {message.generated_query && (
+                        <div className="generated-query">
+                          <Text type="secondary">搜索查询：<Text strong>{message.generated_query}</Text></Text>
+                        </div>
+                      )}
+                      <div className="search-results">
+                        {renderSearchResults(message.results, message.has_relevant_results || false)}
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      {message.generated_query && (
+                        <div className="generated-query">
+                          <Text type="secondary">搜索查询：<Text strong>{message.generated_query}</Text></Text>
+                        </div>
+                      )}
+                      <Text>抱歉，没有找到相关信息</Text>
+                    </>
                   )}
                 </>
               )}
