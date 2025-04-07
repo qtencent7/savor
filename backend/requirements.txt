@@ -2,7 +2,7 @@ fastapi==0.105.0
 uvicorn==0.24.0
 pydantic==2.5.2
 python-dotenv==0.19.1
-duckduckgo-search==2.9.5
+duckduckgo_search==2.9.5
 openai==1.70.0
 python-multipart==0.0.6
 google-search-results

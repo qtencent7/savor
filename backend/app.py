@@ -10,8 +10,7 @@ import openai
 from dotenv import load_dotenv
 import uuid
 from datetime import datetime
-from serpapi import GoogleSearch
-import serpapi
+from serpapi import GoogleSearch, DuckDuckGoSearch
 
 print(f"DuckDuckGo Search version: {duckduckgo_search.__version__}")
 
@@ -285,8 +284,8 @@ Format your response as JSON:
                     result_copy["relevance_score"] = 0
                     result_copy["relevance_reason"] = "No analysis available"
                 
-                # Only include results with relevance score > 30
-                if result_copy.get("relevance_score", 0) > 30:
+                # Only include results with relevance score > 3
+                if result_copy.get("relevance_score", 0) > 3:
                     relevant_results.append(result_copy)
             
             # Sort results by relevance score (descending)
