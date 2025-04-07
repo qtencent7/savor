@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import uuid
 from datetime import datetime
 from serpapi import GoogleSearch
+import serpapi
 
 print(f"DuckDuckGo Search version: {duckduckgo_search.__version__}")
 

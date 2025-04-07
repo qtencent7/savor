@@ -5,3 +5,4 @@ python-dotenv==0.19.1
 duckduckgo-search==2.9.5
 openai==1.70.0
 python-multipart==0.0.6
+google-search-results

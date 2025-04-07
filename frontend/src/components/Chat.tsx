@@ -322,8 +322,9 @@ const Chat: React.FC = () => {
             disabled={loading}
           />
           <Button
+            style={{backgroundColor: '#3d5af1'}}
             type="primary"
-            icon={<SendOutlined />}
+            icon={<SendOutlined color='#fff'/>}
             onClick={handleSendMessage}
             className="send-button"
             disabled={!input.trim() || loading}
