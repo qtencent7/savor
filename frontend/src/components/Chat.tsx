@@ -36,7 +36,7 @@ const Chat: React.FC = () => {
       content: 'Hello! I am your news assistant. Please tell me what news you would like to know about?',
       timestamp: new Date().toISOString()
     };
-    setMessages([welcomeMessage]);
+    setMessages([]);
   }, []);
   
   // Scroll to latest message
@@ -268,7 +268,7 @@ const Chat: React.FC = () => {
                       <Text>Found {message.results.length} related information</Text>
                       {message.generated_query && (
                         <div className="generated-query">
-                          <Text type="secondary">Search query: <Text strong>{message.generated_query}</Text></Text>
+                          <Text type="secondary">Search query: <Text strong style={{color: '#2E8B57'}}>{message.generated_query}</Text></Text>
                         </div>
                       )}
                       <div className="search-results">
@@ -316,7 +316,7 @@ const Chat: React.FC = () => {
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onPressEnter={handleKeyPress}
             placeholder="Enter the news you want to know about..."
             autoSize={{ minRows: 1, maxRows: 4 }}
             disabled={loading}
