@@ -206,6 +206,11 @@ const Chat: React.FC = () => {
               }
             />
             <div className="result-content">
+              {item.image && (
+                <div className="result-image">
+                  <img src={item.image} alt={item.title} />
+                </div>
+              )}
               <Paragraph ellipsis={{ rows: 3, expandable: true, symbol: 'more' }}>
                 {item.body}
               </Paragraph>
